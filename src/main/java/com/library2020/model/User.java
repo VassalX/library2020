@@ -1,52 +1,58 @@
 package com.library2020.model;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import java.time.LocalDate;
+import javax.validation.constraints.Size;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
-@RequiredArgsConstructor
 @Entity
-@Table(name = "user", uniqueConstraints = {
+@Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = {
-                "phoneNumber"
+                "email"
         })
 })
+@Getter @Setter
+@RequiredArgsConstructor
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     private Long id;
 
-    @Getter @Setter @NonNull
+    @NonNull
+    @NotBlank
+    @Size(max = 200)
     private String fullName;
 
-    @Getter @Setter @NonNull
-    private String phoneNumber;
+    @NonNull
+    @NotBlank
+    @Size(max = 254)
+    @Email
+    private String email;
 
-    @Getter @Setter @NonNull
-    private LocalDate dateOfBirth;
+    @NonNull
+    @JsonFormat(pattern="yyyy-MM-dd")
+    private Date dateOfBirth;
 
-    @Getter @Setter @NonNull
+    @NonNull
+    @NotBlank
+    @Size(max = 200)
     private String address;
 
-    @Getter @Setter @NonNull
+    @NonNull
+    @NotBlank
+    @Size(max = 120)
     private String password;
 
-    @Transient
-    @Getter @NonNull
-    private String passwordConfirm;
-
-    @ManyToMany
-    @JoinTable(name = "user_role",
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "userId"),
             inverseJoinColumns = @JoinColumn(name = "roleId"))
-    @Getter @Setter @NonNull
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
 }

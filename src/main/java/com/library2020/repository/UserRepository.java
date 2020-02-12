@@ -3,7 +3,9 @@ package com.library2020.repository;
 import com.library2020.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<User, Long> {
-    User findByPhoneNumber(String phone);
-    Boolean existsByPhoneNumber(String phone);
+    Optional<User> findByEmail(String email);
+    Boolean existsByEmail(String email);
 }
