@@ -3,26 +3,29 @@ package com.library2020.controller;
 import com.library2020.model.Author;
 import com.library2020.model.Book;
 import com.library2020.model.BookInstance;
+import com.library2020.model.Category;
 import com.library2020.payload.request.BookRequest;
 import com.library2020.payload.request.SignupRequest;
 import com.library2020.payload.response.MessageResponse;
 import com.library2020.repository.AuthorRepository;
+import com.library2020.repository.BookInstanceRepository;
 import com.library2020.repository.BookRepository;
 import com.library2020.repository.CategoryRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
+    private static final Logger logger = LoggerFactory.getLogger(BookController.class);
+
     @Autowired
     BookRepository bookRepository;
 
@@ -31,6 +34,9 @@ public class BookController {
 
     @Autowired
     CategoryRepository categoryRepository;
+
+    @Autowired
+    BookInstanceRepository bookInstanceRepository;
 
     @GetMapping("/")
     public ResponseEntity<?> getAllBooks(){
@@ -50,40 +56,114 @@ public class BookController {
         }
     }
 
-    @PostMapping("/")
-    public ResponseEntity<?> createBook(@Valid @RequestBody BookRequest bookRequest){
-        if(bookRequest.getAuthors() != null){
-            for(int i = 0; i < bookRequest.getAuthors().size(); i++){
-                Author author = bookRequest.getAuthors().get(i);
-                Optional<Author> found = authorRepository.findByFullName(author.getFullName());
-                bookRequest.getAuthors().set(i,found.orElse(author));
-            }
-        }
-
-        if(bookRequest.getCategory() != null
-                && !categoryRepository.existsByName(bookRequest.getCategory().getName())){
+    @GetMapping(value = "/", params = "author")
+    public ResponseEntity<?> getBooksByAuthor(@RequestParam(name = "author") String fullName){
+        Optional<Author> author = authorRepository.findByFullName(fullName);
+        if(author.isPresent()){
+            return ResponseEntity.ok(author.get().getBooks());
+        }else{
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse(
-                            String.format("Error: Category %s doesn't exist",
-                                    bookRequest.getCategory().getName())));
+                            String.format("Error: Author with name: %s doesn't exist",fullName)));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
+            @Valid @RequestBody BookRequest bookRequest){
+        Optional<Book> foundBook = bookRepository.findById(id);
+        if(!foundBook.isPresent()){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse(
+                            String.format("Error: Book with id: %d doesn't exist",id)));
+        }
+        Book book = foundBook.get();
+        book.setName(bookRequest.getName());
+        book.setNumberOfPages(bookRequest.getNumberOfPages());
+        book.setPrice(bookRequest.getPrice());
+        book.setPublishingHouse(bookRequest.getPublishingHouse());
+        book.setPublishingYear(bookRequest.getPublishingYear());
+        book.setCity(bookRequest.getCity());
+
+        if(bookRequest.getAuthors() != null){
+            for (Author oldAuthor : book.getAuthors()) {
+                if (!bookRequest.getAuthors().contains(oldAuthor.getFullName())) {
+                    book.removeAuthor(oldAuthor);
+                }
+            }
+            bookRequest.getAuthors().forEach(author -> {
+                Optional<Author> found = authorRepository.findByFullName(author);
+                book.addAuthor(found.orElse(new Author(author)));
+            });
         }
 
+        if(bookRequest.getCategory() != null){
+            Optional<Category> found = categoryRepository.findByName(bookRequest.getCategory());
+            if (!found.isPresent()) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse(
+                                String.format("Error: Category %s doesn't exist",
+                                        bookRequest.getCategory())));
+            } else {
+                book.setCategory(found.get());
+            }
+        }
+
+        if(book.getNumberOfInstances() > bookRequest.getNumberOfInstances()){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse(
+                            String.format("Error: new number of instances (%d) cannot be less than %d",
+                                    bookRequest.getNumberOfInstances(),
+                                    book.getNumberOfInstances())));
+        }
+
+        for(long i = book.getNumberOfInstances(); i < bookRequest.getNumberOfInstances(); i++){
+            book.addInstance(new BookInstance(true));
+        }
+
+        bookRepository.save(book);
+
+        return ResponseEntity.ok(book);
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<?> createBook(@Valid @RequestBody BookRequest bookRequest){
         Book newBook = new Book(
+                bookRequest.getName(),
+                bookRequest.getNumberOfPages(),
+                bookRequest.getPrice(),
                 bookRequest.getPublishingHouse(),
                 bookRequest.getPublishingYear(),
-                bookRequest.getCity(),
-                bookRequest.getNumberOfPages(),
-                bookRequest.getPrice()
+                bookRequest.getCity()
         );
-        newBook.setAuthors(bookRequest.getAuthors());
-        newBook.setCategory(bookRequest.getCategory());
 
-        List<BookInstance> bookInstances = new ArrayList<>();
-        for(int i = 0; i < bookRequest.getNumberOfInstances(); i++){
-            bookInstances.add(new BookInstance(true));
+        if(bookRequest.getAuthors() != null){
+            bookRequest.getAuthors().forEach(author -> {
+                Optional<Author> found = authorRepository.findByFullName(author);
+                newBook.addAuthor(found.orElse(new Author(author)));
+            });
         }
-        newBook.setBookInstances(bookInstances);
+
+        if(bookRequest.getCategory() != null){
+            Optional<Category> found = categoryRepository.findByName(bookRequest.getCategory());
+            if(found.isPresent()){
+                newBook.setCategory(found.get());
+            }else{
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse(
+                                String.format("Error: Category %s doesn't exist",
+                                        bookRequest.getCategory())));
+            }
+        }
+
+        for(int i = 0; i < bookRequest.getNumberOfInstances(); i++){
+            newBook.addInstance(new BookInstance(true));
+        }
 
         bookRepository.save(newBook);
 

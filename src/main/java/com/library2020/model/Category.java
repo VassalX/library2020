@@ -1,9 +1,12 @@
 package com.library2020.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +24,9 @@ public class Category {
     @NotBlank
     private String name;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "books")
-    private List<Book> books;
+    @OneToMany(fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            mappedBy = "category")
+    @JsonBackReference
+    private List<Book> books = new ArrayList<>();
 }

@@ -1,5 +1,6 @@
 package com.library2020.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
@@ -19,5 +20,6 @@ public class BookInstance {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bookId")
+    @JsonBackReference
     private Book book;
 }

@@ -34,6 +34,10 @@ public class BookRequest {
     private Long numberOfPages;
 
     @NotNull
+    @NotBlank
+    private String name;
+
+    @NotNull
     @Min(0)
     private BigDecimal price;
 
@@ -41,7 +45,7 @@ public class BookRequest {
     @Min(1)
     private Long numberOfInstances;
 
-    private Category category;
+    private String category;
 
-    private List<Author> authors;
+    private Set<String> authors;
 }
