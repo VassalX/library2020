@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.Set;
@@ -26,7 +27,7 @@ public class SignupRequest {
     @Size(min = 6, max = 200)
     private String fullName;
 
-    @NonNull
+    @NotNull
     @JsonFormat(pattern="yyyy-MM-dd")
     private Date dateOfBirth;
 
