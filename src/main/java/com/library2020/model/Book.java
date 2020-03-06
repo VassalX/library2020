@@ -48,6 +48,10 @@ public class Book {
     @NotBlank
     private String city;
 
+    @NonNull
+    @NotBlank
+    private String description;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "categoryId")
     @JsonManagedReference

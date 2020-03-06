@@ -4,7 +4,9 @@ import com.library2020.model.Author;
 import com.library2020.model.Category;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.Lob;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -28,6 +30,10 @@ public class BookRequest {
     @NotNull
     @NotBlank
     private String city;
+
+    @NotNull
+    @NotBlank
+    private String description;
 
     @NotNull
     @Min(1)

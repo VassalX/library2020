@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -71,7 +72,7 @@ public class BookController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
-            @Valid @RequestBody BookRequest bookRequest){
+            @Valid @RequestBody BookRequest bookRequest) throws IOException {
         Optional<Book> foundBook = bookRepository.findById(id);
         if(!foundBook.isPresent()){
             return ResponseEntity
@@ -86,6 +87,7 @@ public class BookController {
         book.setPublishingHouse(bookRequest.getPublishingHouse());
         book.setPublishingYear(bookRequest.getPublishingYear());
         book.setCity(bookRequest.getCity());
+        book.setDescription(bookRequest.getDescription());
 
         if(bookRequest.getAuthors() != null){
             for (Author oldAuthor : book.getAuthors()) {
@@ -131,14 +133,15 @@ public class BookController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<?> createBook(@Valid @RequestBody BookRequest bookRequest){
+    public ResponseEntity<?> createBook(@Valid @RequestBody BookRequest bookRequest) throws IOException {
         Book newBook = new Book(
                 bookRequest.getName(),
                 bookRequest.getNumberOfPages(),
                 bookRequest.getPrice(),
                 bookRequest.getPublishingHouse(),
                 bookRequest.getPublishingYear(),
-                bookRequest.getCity()
+                bookRequest.getCity(),
+                bookRequest.getDescription()
         );
 
         if(bookRequest.getAuthors() != null){
