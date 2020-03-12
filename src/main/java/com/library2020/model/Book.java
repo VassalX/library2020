@@ -3,6 +3,7 @@ package com.library2020.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
+import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -20,9 +21,14 @@ import java.util.Set;
 @NoArgsConstructor
 public class Book {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NaturalId
     @NonNull
     @NotBlank
     private String isbn;
+
 
     @NonNull
     @NotBlank
@@ -61,7 +67,7 @@ public class Book {
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     @JoinTable(name = "book_authors",
-            joinColumns = @JoinColumn(name = "bookIsbn"),
+            joinColumns = @JoinColumn(name = "bookId"),
             inverseJoinColumns = @JoinColumn(name = "authorId"))
     @JsonManagedReference
     private Set<Author> authors = new HashSet<>();

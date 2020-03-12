@@ -39,6 +39,16 @@ public class BookController {
     @Autowired
     BookInstanceRepository bookInstanceRepository;
 
+    @GetMapping("/authors")
+    public  ResponseEntity<?> getAllAuthors(){
+        return  ResponseEntity.ok(authorRepository.findAll());
+    }
+
+    @GetMapping("/categories")
+    public  ResponseEntity<?> getAllCategories(){
+        return  ResponseEntity.ok(categoryRepository.findAll());
+    }
+
     @GetMapping("/")
     public ResponseEntity<?> getAllBooks(){
         return ResponseEntity.ok(bookRepository.findAll());
