@@ -54,16 +54,16 @@ public class BookController {
         return ResponseEntity.ok(bookRepository.findAll());
     }
 
-    @GetMapping("/{isbn}")
-    public ResponseEntity<?> getBookByIsbn(
-            @PathVariable(value = "isbn") String isbn){
-        if(bookRepository.existsByIsbn(isbn)){
-            return ResponseEntity.ok(bookRepository.findByIsbn(isbn));
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getBookById(
+            @PathVariable(value = "id") Long id){
+        if(bookRepository.existsById(id)){
+            return ResponseEntity.ok(bookRepository.findById(id));
         }else{
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse(
-                            String.format("Error: Book with isbn: %s doesn't exist",isbn)));
+                            String.format("Error: Book with id: %d doesn't exist",id)));
         }
     }
 
@@ -80,15 +80,15 @@ public class BookController {
         }
     }
 
-    @PutMapping("/{isbn}")
-    public ResponseEntity<?> updateBookByIsbn(@PathVariable(value = "isbn") String isbn,
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
             @Valid @RequestBody BookRequest bookRequest) throws IOException {
-        Optional<Book> foundBook = bookRepository.findByIsbn(isbn);
+        Optional<Book> foundBook = bookRepository.findById(id);
         if(!foundBook.isPresent()){
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse(
-                            String.format("Error: Book with isbn: %s doesn't exist",isbn)));
+                            String.format("Error: Book with id: %d doesn't exist",id)));
         }
         Book book = foundBook.get();
         book.setName(bookRequest.getName());
