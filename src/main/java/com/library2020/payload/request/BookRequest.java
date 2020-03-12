@@ -19,6 +19,9 @@ import java.util.Set;
 @Setter
 public class BookRequest {
 
+    @NotBlank
+    private String isbn;
+
     @NotNull
     @NotBlank
     private String publishingHouse;

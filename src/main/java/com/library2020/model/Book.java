@@ -20,8 +20,9 @@ import java.util.Set;
 @NoArgsConstructor
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @NonNull
+    @NotBlank
+    private String isbn;
 
     @NonNull
     @NotBlank
@@ -60,7 +61,7 @@ public class Book {
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     @JoinTable(name = "book_authors",
-            joinColumns = @JoinColumn(name = "bookId"),
+            joinColumns = @JoinColumn(name = "bookIsbn"),
             inverseJoinColumns = @JoinColumn(name = "authorId"))
     @JsonManagedReference
     private Set<Author> authors = new HashSet<>();

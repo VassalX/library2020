@@ -44,16 +44,16 @@ public class BookController {
         return ResponseEntity.ok(bookRepository.findAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getBookById(
-            @PathVariable(value = "id") Long id){
-        if(bookRepository.existsById(id)){
-            return ResponseEntity.ok(bookRepository.findById(id));
+    @GetMapping("/{isbn}")
+    public ResponseEntity<?> getBookByIsbn(
+            @PathVariable(value = "isbn") String isbn){
+        if(bookRepository.existsByIsbn(isbn)){
+            return ResponseEntity.ok(bookRepository.findByIsbn(isbn));
         }else{
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse(
-                            String.format("Error: Book with id: %d doesn't exist",id)));
+                            String.format("Error: Book with isbn: %s doesn't exist",isbn)));
         }
     }
 
@@ -70,15 +70,15 @@ public class BookController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
+    @PutMapping("/{isbn}")
+    public ResponseEntity<?> updateBookByIsbn(@PathVariable(value = "isbn") String isbn,
             @Valid @RequestBody BookRequest bookRequest) throws IOException {
-        Optional<Book> foundBook = bookRepository.findById(id);
+        Optional<Book> foundBook = bookRepository.findByIsbn(isbn);
         if(!foundBook.isPresent()){
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse(
-                            String.format("Error: Book with id: %d doesn't exist",id)));
+                            String.format("Error: Book with isbn: %s doesn't exist",isbn)));
         }
         Book book = foundBook.get();
         book.setName(bookRequest.getName());
@@ -135,6 +135,7 @@ public class BookController {
     @PostMapping("/")
     public ResponseEntity<?> createBook(@Valid @RequestBody BookRequest bookRequest) throws IOException {
         Book newBook = new Book(
+                bookRequest.getIsbn(),
                 bookRequest.getName(),
                 bookRequest.getNumberOfPages(),
                 bookRequest.getPrice(),
