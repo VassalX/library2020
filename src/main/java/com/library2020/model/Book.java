@@ -29,6 +29,7 @@ public class Book {
     @NotBlank
     private String isbn;
 
+    private String picture;
 
     @NonNull
     @NotBlank
