@@ -85,7 +85,7 @@ public class BookController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(path="/{id}", consumes = { "multipart/form-data" })
     public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
                                             @Valid @RequestPart(value = "request") BookRequest bookRequest,
                                             @RequestPart(value = "picture") MultipartFile picture) throws IOException {
@@ -156,7 +156,7 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
 
-    @PostMapping("/")
+    @PostMapping(path="/", consumes = { "multipart/form-data" })
     public ResponseEntity<?> createBook(@Valid @RequestPart(value = "request") BookRequest bookRequest,
                                         @RequestPart(value = "picture") MultipartFile picture) throws IOException {
         Book newBook = new Book(
