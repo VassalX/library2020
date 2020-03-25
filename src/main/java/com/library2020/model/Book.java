@@ -21,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @NaturalId
@@ -29,6 +29,7 @@ public class Book {
     @NotBlank
     private String isbn;
 
+    private String picture;
 
     @NonNull
     @NotBlank

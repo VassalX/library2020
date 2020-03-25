@@ -1,5 +1,6 @@
 package com.library2020.controller;
 
+import com.library2020.amazon.AmazonClient;
 import com.library2020.model.Author;
 import com.library2020.model.Book;
 import com.library2020.model.BookInstance;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -26,6 +28,9 @@ import java.util.*;
 @RequestMapping("/api/books")
 public class BookController {
     private static final Logger logger = LoggerFactory.getLogger(BookController.class);
+
+    @Autowired
+    AmazonClient amazonClient;
 
     @Autowired
     BookRepository bookRepository;
@@ -80,9 +85,10 @@ public class BookController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(path="/{id}", consumes = { "multipart/form-data" })
     public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
-            @Valid @RequestBody BookRequest bookRequest) throws IOException {
+                                            @Valid @RequestPart("request") BookRequest bookRequest,
+                                            @RequestPart("picture") MultipartFile picture) throws IOException {
         Optional<Book> foundBook = bookRepository.findById(id);
         if(!foundBook.isPresent()){
             return ResponseEntity
@@ -137,13 +143,22 @@ public class BookController {
             book.addInstance(new BookInstance(true));
         }
 
+        if(picture != null){
+            if(book.getPicture() != null){
+                amazonClient.deleteFileFromS3Bucket(book.getPicture());
+            }
+            String fileUrl = amazonClient.uploadFile(picture);
+            book.setPicture(fileUrl);
+        }
+
         bookRepository.save(book);
 
         return ResponseEntity.ok(book);
     }
 
-    @PostMapping("/")
-    public ResponseEntity<?> createBook(@Valid @RequestBody BookRequest bookRequest) throws IOException {
+    @PostMapping(path="/", consumes = { "multipart/form-data" })
+    public ResponseEntity<?> createBook(@Valid @RequestPart("request") BookRequest bookRequest,
+                                        @RequestPart("picture") MultipartFile picture) throws IOException {
         Book newBook = new Book(
                 bookRequest.getIsbn(),
                 bookRequest.getName(),
@@ -177,6 +192,11 @@ public class BookController {
 
         for(int i = 0; i < bookRequest.getNumberOfInstances(); i++){
             newBook.addInstance(new BookInstance(true));
+        }
+
+        if(picture != null){
+            String fileUrl = amazonClient.uploadFile(picture);
+            newBook.setPicture(fileUrl);
         }
 
         bookRepository.save(newBook);
