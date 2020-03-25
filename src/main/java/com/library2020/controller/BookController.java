@@ -87,8 +87,8 @@ public class BookController {
 
     @PutMapping(path="/{id}", consumes = { "multipart/form-data" })
     public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
-                                            @Valid @RequestPart(value = "request") BookRequest bookRequest,
-                                            @RequestPart(value = "picture") MultipartFile picture) throws IOException {
+                                            @Valid @RequestPart("request") BookRequest bookRequest,
+                                            @RequestPart("picture") MultipartFile picture) throws IOException {
         Optional<Book> foundBook = bookRepository.findById(id);
         if(!foundBook.isPresent()){
             return ResponseEntity
@@ -157,8 +157,8 @@ public class BookController {
     }
 
     @PostMapping(path="/", consumes = { "multipart/form-data" })
-    public ResponseEntity<?> createBook(@Valid @RequestPart(value = "request") BookRequest bookRequest,
-                                        @RequestPart(value = "picture") MultipartFile picture) throws IOException {
+    public ResponseEntity<?> createBook(@Valid @RequestPart("request") BookRequest bookRequest,
+                                        @RequestPart("picture") MultipartFile picture) throws IOException {
         Book newBook = new Book(
                 bookRequest.getIsbn(),
                 bookRequest.getName(),
