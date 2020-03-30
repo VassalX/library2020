@@ -23,10 +23,10 @@ import java.util.Objects;
 
 @Service
 public class AmazonClient {
-    @Value("${aws.accessKey}")
+    @Value("${S3_KEY}")
     private String awsKeyId;
 
-    @Value("${aws.secretKey}")
+    @Value("${S3_SECRET}")
     private String awsKeySecret;
 
     @Value("${aws.region}")
