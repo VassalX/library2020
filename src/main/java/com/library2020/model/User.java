@@ -26,12 +26,10 @@ public class User {
 
     @NonNull
     @NotBlank
-    @Size(max = 200)
     private String fullName;
 
     @NonNull
     @NotBlank
-    @Size(max = 254)
     @Email
     private String email;
 
@@ -41,12 +39,11 @@ public class User {
 
     @NonNull
     @NotBlank
-    @Size(max = 200)
     private String address;
 
     @NonNull
     @NotBlank
-    @Size(max = 120)
+    @Size(min = 6)
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
