@@ -51,7 +51,17 @@ public class OrderController {
 
         Optional<BookInstance> bookInstanceFound = bookInstanceRepository.findById(orderRequest.getBookInstanceId());
         if(bookInstanceFound.isPresent()){
-            order.setBookInstance(bookInstanceFound.get());
+            BookInstance bookInstance = bookInstanceFound.get();
+            if(!bookInstance.getIsPresent()){
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse(
+                                String.format("Error: BookInstance with id %s is not present",
+                                        orderRequest.getBookInstanceId())));
+            }
+            bookInstance.setIsPresent(false);
+            bookInstanceRepository.save(bookInstance);
+            order.setBookInstance(bookInstance);
         }else{
             return ResponseEntity
                     .badRequest()
@@ -68,7 +78,7 @@ public class OrderController {
     @PutMapping("/{id}")
     //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> changeStatus(@PathVariable(value = "id") Long id,
-                                          @Valid @RequestBody OrderRequest orderRequest){
+                                          @RequestBody OrderRequest orderRequest){
         Optional<Order> foundOrder = orderRepository.findById(id);
         if(!foundOrder.isPresent()){
             return ResponseEntity
@@ -77,9 +87,17 @@ public class OrderController {
                             String.format("Error: Order with id: %d doesn't exist",id)));
         }
         Order order = foundOrder.get();
-        order.setExpectedReturnDate(orderRequest.getExpectedReturnDate());
+        if(orderRequest.getExpectedReturnDate() != null)
+            order.setExpectedReturnDate(orderRequest.getExpectedReturnDate());
         OrderStatus status = OrderStatus.fromString(orderRequest.getStatus());
         if(status != null){
+            BookInstance bookInstance = order.getBookInstance();
+            if(status == OrderStatus.ACTIVE || status == OrderStatus.ON_REVIEW){
+                bookInstance.setIsPresent(false);
+            }else{
+                bookInstance.setIsPresent(true);
+            }
+            bookInstanceRepository.save(bookInstance);
             order.setStatus(status);
         }
         if(orderRequest.getActualReturnDate() != null){
