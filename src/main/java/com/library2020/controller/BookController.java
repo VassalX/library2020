@@ -103,7 +103,7 @@ public class BookController {
     //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
                                             @Valid @RequestPart("request") BookRequest bookRequest,
-                                            @RequestPart("picture") MultipartFile picture) throws IOException {
+                                            @RequestPart(name="picture", required = false) MultipartFile picture) throws IOException {
         Optional<Book> foundBook = bookRepository.findById(id);
         if(!foundBook.isPresent()){
             return ResponseEntity
