@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -85,10 +86,24 @@ public class BookController {
         }
     }
 
+    @GetMapping(value = "/", params = "category")
+    public ResponseEntity<?> getBooksByCategory(@RequestParam(name = "category") String name){
+        Optional<Category> category = categoryRepository.findByName(name);
+        if(category.isPresent()){
+            return ResponseEntity.ok(category.get().getBooks());
+        }else{
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse(
+                            String.format("Error: Category with name: %s doesn't exist",name)));
+        }
+    }
+
     @PutMapping(path="/{id}", consumes = { "multipart/form-data" })
+    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> updateBookById(@PathVariable(value = "id") Long id,
                                             @Valid @RequestPart("request") BookRequest bookRequest,
-                                            @RequestPart("picture") MultipartFile picture) throws IOException {
+                                            @RequestPart(name="picture", required = false) MultipartFile picture) throws IOException {
         Optional<Book> foundBook = bookRepository.findById(id);
         if(!foundBook.isPresent()){
             return ResponseEntity
@@ -157,6 +172,7 @@ public class BookController {
     }
 
     @PostMapping(path="/", consumes = { "multipart/form-data" })
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createBook(@Valid @RequestPart("request") BookRequest bookRequest,
                                         @RequestPart("picture") MultipartFile picture) throws IOException {
         Book newBook = new Book(

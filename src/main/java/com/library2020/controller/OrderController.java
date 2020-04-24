@@ -66,7 +66,7 @@ public class OrderController {
     }
 
     @PutMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> changeStatus(@PathVariable(value = "id") Long id,
                                           @Valid @RequestBody OrderRequest orderRequest){
         Optional<Order> foundOrder = orderRepository.findById(id);
@@ -93,7 +93,7 @@ public class OrderController {
 
     @GetMapping("/")
     //@PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getAllBooks(){
+    public ResponseEntity<?> getAllOrders(){
         return ResponseEntity.ok(orderRepository.findAll());
     }
 }
